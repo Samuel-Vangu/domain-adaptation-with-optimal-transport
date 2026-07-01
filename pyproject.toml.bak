@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "domain-adaptation-ot"
+version = "0.1.0"
+description = "Reproduction de l'article: Optimal Transport for Domain Adaptation"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Samuel Vangu", email = "samuel@example.com"},
+]
+
+# Dépendances principales
+dependencies = [
+    "numpy>=1.20.0",
+    "scipy>=1.7.0",
+    "scikit-learn>=0.24.0",
+    "POT>=0.8.0",
+    "matplotlib>=3.4.0",
+    "seaborn>=0.11.0",
+    "pandas>=1.3.0",
+    # PBDA installé localement
+    "pbda @ file:external/pbda",
+]
+
+# Dépendances optionnelles
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0",
+    "black>=21.0",
+    "flake8>=3.9",
+    "mypy>=0.900",
+    "jupyter>=1.0",
+    "ipykernel>=6.0",
+]
+viz = [
+    "matplotlib>=3.4.0",
+    "seaborn>=0.11.0",
+    "plotly>=5.0",
+]
+gpu = [
+    "torch>=1.9.0",
+    "torchvision>=0.10.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["*"]
+exclude = ["tests*", "external*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", "*.md"]
+
+# Configuration des outils
+[tool.black]
+line-length = 100
+target-version = ['py38']
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
