@@ -1,0 +1,178 @@
+from sklearn.datasets import make_moons
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+class TwoMoonsDataset:
+    """
+    Dataset generator for the Two Moons problem with controllable rotation.
+    
+    - Source domain: standard two moons dataset
+    - Target domain: same data rotated by a given angle in degrees
+    
+    This setup creates a challenging adaptation problem when the rotation 
+    angle is large, as the distributions become significantly different.
+    """
+
+    def __init__(self, noise=0.1, seed=42):
+        """
+        Initialize the Two Moons dataset generator.
+        
+        Parameters
+        ----------
+        noise : float, default=0.1
+            Noise level passed to sklearn's make_moons.
+        seed : int, default=42
+            Random seed for reproducibility.
+        """
+        self.noise = noise
+        self.seed = seed
+
+    def rotate(self, X, angle):
+        """
+        Rotate 2D points by a given angle (in degrees).
+        
+        Parameters
+        ----------
+        X : ndarray of shape (n_samples, 2)
+            Input points to rotate.
+        angle : float
+            Rotation angle in degrees (positive = counter-clockwise).
+            
+        Returns
+        -------
+        ndarray of shape (n_samples, 2)
+            Rotated points.
+        """
+        angle = np.radians(angle)
+        array = np.zeros_like(X)
+        array[:,0] = (X[:,0] * np.cos(angle)) - (X[:,1] * np.sin(angle))
+        array[:,1] = (X[:,0] * np.sin(angle)) + (X[:,1] * np.cos(angle))
+        return array
+
+    def source(self, n_samples):
+        """
+        Generate the source domain (standard two moons).
+        
+        Parameters
+        ----------
+        n_samples : int
+            Number of samples to generate.
+            
+        Returns
+        -------
+        X : ndarray of shape (n_samples, 2)
+            Feature matrix.
+        y : ndarray of shape (n_samples,)
+            Labels (0 or 1).
+        """
+        X, y = make_moons(n_samples, noise=self.noise, random_state=self.seed)
+        return X, y
+
+    def target(self, n_samples, angle):
+        """
+        Generate the target domain: two moons rotated by a given angle.
+        
+        Parameters
+        ----------
+        n_samples : int
+            Number of samples to generate.
+        angle : float
+            Rotation angle in degrees.
+            
+        Returns
+        -------
+        X : ndarray of shape (n_samples, 2)
+            Rotated feature matrix.
+        y : ndarray of shape (n_samples,)
+            Labels (0 or 1).
+        """
+        X, y = make_moons(n_samples, noise=self.noise, random_state=self.seed)
+        X = self.rotate(X, angle)
+        return X, y
+
+class Dataset:
+    """ 
+    Binary classification dataset
+    
+    X -- Examples matrix (each row is a vector of features)
+    Y -- Label vector
+    """
+    def __init__(self, X=None, Y=None):
+        self.X = X
+        self.Y = Y
+        
+    def load_matrix_file(self, filename, separator=None, first_column_contains_labels=True, last_column_contains_labels=False):       
+        """ Load a matrix file, where each line defines an example.
+        first_column_contains_labels: specifies that first matrix column defines the labels (default)
+        last_column_contains_labels:  specifies that last matrix column defines the labels 
+        """
+        data_matrix = np.loadtxt(filename, delimiter=separator)
+        
+        if first_column_contains_labels and last_column_contains_labels:
+            raise Exception('first_column_contains_labels and last_column_contains_labels')
+        elif last_column_contains_labels:
+            self.X = data_matrix[ :, :-1 ]
+            self.Y = data_matrix[ :, -1 ]
+        elif first_column_contains_labels:
+            self.X = data_matrix[ :, 1: ]
+            self.Y = data_matrix[ :, 0] 
+        else:
+            self.X = data_matrix
+            self.Y = np.zeros( np.size(data_matrix, 0) )       
+
+    def load_svmlight_file(self, filename, min_features=0):
+        """ Load a svmlight file (see http://svmlight.joachims.org/).
+        min_features: specifies the minimum number of features for an example
+        """
+        with open(filename) as f:
+            lines_list = f.readlines()
+                    
+        examples_list = []                  
+        labels_list   = []
+        nb_features   = min_features
+        
+        for line in lines_list:
+            elems_list = [ e.split(':') for e in line.split() ] 
+            
+            if len(elems_list[0]) == 1:
+                labels_list.append( float(elems_list[0][0]) )
+                first_feature_index = 1
+            else:
+                labels_list.append(0.0)
+                first_feature_index = 0
+            
+            features_list = [ tuple([ int(e[0]), float(e[1]) ])  for e in elems_list[first_feature_index:] ]
+            examples_list.append( features_list )
+            nb_features = max(nb_features, max( features_list )[0] )
+            
+        self.X = np.zeros( (len(labels_list), nb_features) )
+        for i in range( len(labels_list) ):
+            for (j, val) in examples_list[i]:
+                self.X[i,j-1] = val
+                
+        self.Y = np.array(labels_list)
+                 
+    def get_nb_examples(self):
+        """ Return the number of examples of the dataset. """
+        if self.X is None: return 0
+        return np.size(self.X, 0)       
+    
+    def get_nb_features(self):
+        """ Return the number of features of each example. """
+        if self.X is None: return 0
+        return np.size(self.X, 1)
+
+    def select_examples(self, indices):
+        """ Select the examples of specified indices (and discard others).  """
+        self.X = self.X[indices]
+        self.Y = self.Y[indices]
+        
+    def reshape_features(self, new_nb_features):
+        """ Add or remove elements to feature vectors. """
+        diff_features = new_nb_features - self.get_nb_features()
+        if diff_features < 0:
+            self.X = self.X[:, :diff_features]        
+        elif diff_features > 0:
+            nb_examples = self.get_nb_examples()
+            self.X = np.hstack(( self.X, np.zeros([nb_examples, diff_features]) ))

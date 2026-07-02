@@ -1,10 +1,12 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "domain-adaptation-ot"
 version = "0.1.0"
+description = "Domain Adaptation with Optimal Transport"
+requires-python = ">=3.8"
 dependencies = [
     "numpy",
     "scipy",
@@ -13,8 +15,18 @@ dependencies = [
     "matplotlib",
     "seaborn",
     "skada",
-    "pbda @ file:external/pbda",
+    # "pbda @ file:./external/pbda",   # Décommente quand pbda sera prêt
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ipykernel",
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
+namespaces = false
+
+[tool.setuptools]
+include-package-data = true

@@ -19,4 +19,4 @@ def cost_matrix(A: np.ndarray, B: np.ndarray):
         return cost(row, B)
     
     C = np.apply_along_axis(wrapper, axis=1, arr=A)
-    return C
+    return C*C
