@@ -20,9 +20,9 @@ class TransportedSamples:
         self,
         seed: int,
         angles=(10, 20, 30, 40, 50, 70, 90),
-        entropic_reg: float = 1,
-        group_lasso_reg: float = 1,
-        laplacian_reg: float = 1,
+        entropic_reg: float = 0.2,
+        group_lasso_reg: float = 0.1,
+        laplacian_reg: float = 0.1,
     ):
         self.seed = seed
         self.angles = angles
@@ -69,7 +69,7 @@ class TransportedSamples:
             # -------------------------
             # Entropic OT (Sinkhorn)
             # -------------------------
-            sinkhorn_plan = ot.sinkhorn(ps, pt, C, reg=self.entropic_reg)
+            sinkhorn_plan = ot.sinkhorn(ps, pt, C, reg=self.entropic_reg,numItermax=10000)
             self.sinkhorn_Xs[angle] = ns * (sinkhorn_plan @ Xt)
 
             # -------------------------
@@ -78,7 +78,8 @@ class TransportedSamples:
             gl_plan = ot.da.sinkhorn_l1l2_gl(
                 ps, ys, pt, C,
                 self.entropic_reg,
-                eta=self.group_lasso_reg
+                eta=self.group_lasso_reg,
+                numItermax=10000
             )
             self.gl_Xs[angle] = ns * (gl_plan @ Xt)
 
@@ -87,7 +88,8 @@ class TransportedSamples:
             # -------------------------
             lap_plan = ot.da.emd_laplace(
                 ps, pt, Xs, Xt, C,
-                eta=self.laplacian_reg
+                eta=self.laplacian_reg,
+                numItermax=10000
             )
             self.laplace_Xs[angle] = ns * (lap_plan @ Xt)
 
