@@ -4,14 +4,12 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from transport import TransportedSamples
 from tpami2016_optimal_transport_domain_adaptation.datasets import TwoMoonsDataset
-from pbda import Pbda
-from tpami2016_optimal_transport_domain_adaptation.datasets import Dataset
 from sklearn.base import clone
 from skada import DASVMClassifier, source_target_split
 from skada.datasets import make_dataset_from_moons_distribution  
 import numpy as np
 from sklearn.metrics import accuracy_score
-from tpami2016_optimal_transport_domain_adaptation.common import Kernel
+
 
 
 angles = [10, 20, 30, 40, 50, 70, 90]
@@ -19,7 +17,7 @@ ot_methods = ["exact", "entropic", "group lasso", "laplacian"]
 
 # rows : methods
 # cols : angles
-results = np.zeros((7, len(angles)))
+results = np.zeros((6, len(angles)))
 
 method_names = [
     "SVM",
@@ -28,7 +26,6 @@ method_names = [
     "OT-group lasso",
     "OT-laplacian",
     "DASVM",
-    "PBDA",
 ]
 
 for j, angle in enumerate(angles):
@@ -38,7 +35,7 @@ for j, angle in enumerate(angles):
     print(f"Angle {angle}° ({j+1}/{len(angles)})")
     print("=" * 70)
 
-    scores = np.zeros(7)
+    scores = np.zeros(6)
 
     for seed in range(10):
 
@@ -161,23 +158,7 @@ for j, angle in enumerate(angles):
 
         scores[5] += accuracy_score(y_test, y_pred)
 
-        #####################################################
-        # 4) PBDA
-        #####################################################
 
-        pbda = Pbda(C =1,  A = 10)
-
-        source_data = Dataset(Xs, ys)
-        target_data = Dataset(Xt, yt)
-
-        classifier = pbda.learn(
-        source_data,
-        target_data,
-)
-        y_score = classifier.predict(X_test)
-        y_pred = (y_score > 0).astype(int)
-
-        scores[6] += accuracy_score(y_test, y_pred)
 
     #########################################################
     # Mean error rate for one angle

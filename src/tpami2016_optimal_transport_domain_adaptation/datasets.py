@@ -14,7 +14,7 @@ class TwoMoonsDataset:
     angle is large, as the distributions become significantly different.
     """
 
-    def __init__(self, noise=0.1, seed=42):
+    def __init__(self, noise=0.01, seed=42):
         """
         Initialize the Two Moons dataset generator.
         
@@ -91,88 +91,53 @@ class TwoMoonsDataset:
         X = self.rotate(X, angle)
         return X, y
 
-class Dataset:
-    """ 
-    Binary classification dataset
-    
-    X -- Examples matrix (each row is a vector of features)
-    Y -- Label vector
-    """
-    def __init__(self, X=None, Y=None):
-        self.X = X
-        self.Y = Y
-        
-    def load_matrix_file(self, filename, separator=None, first_column_contains_labels=True, last_column_contains_labels=False):       
-        """ Load a matrix file, where each line defines an example.
-        first_column_contains_labels: specifies that first matrix column defines the labels (default)
-        last_column_contains_labels:  specifies that last matrix column defines the labels 
-        """
-        data_matrix = np.loadtxt(filename, delimiter=separator)
-        
-        if first_column_contains_labels and last_column_contains_labels:
-            raise Exception('first_column_contains_labels and last_column_contains_labels')
-        elif last_column_contains_labels:
-            self.X = data_matrix[ :, :-1 ]
-            self.Y = data_matrix[ :, -1 ]
-        elif first_column_contains_labels:
-            self.X = data_matrix[ :, 1: ]
-            self.Y = data_matrix[ :, 0] 
+
+# ========================== Code de visualisation ==========================
+def plot_two_moons():
+    dataset = TwoMoonsDataset(noise=0.1, seed=42)
+    angles = [0, 20, 40, 90]
+    n_samples = 300  # 150 par classe
+
+    # Création d'une figure avec 4 sous-graphiques
+    fig, axs = plt.subplots(2, 2, figsize=(12, 10))
+    axs = axs.ravel()
+
+    for i, angle in enumerate(angles):
+        if angle == 0:
+            X, y = dataset.source(n_samples)
+            title = "Source domain (0°)"
         else:
-            self.X = data_matrix
-            self.Y = np.zeros( np.size(data_matrix, 0) )       
+            X, y = dataset.target(n_samples, angle)
+            title = f"Target domain ({angle}°)"
 
-    def load_svmlight_file(self, filename, min_features=0):
-        """ Load a svmlight file (see http://svmlight.joachims.org/).
-        min_features: specifies the minimum number of features for an example
-        """
-        with open(filename) as f:
-            lines_list = f.readlines()
-                    
-        examples_list = []                  
-        labels_list   = []
-        nb_features   = min_features
+        # Séparation des deux classes
+        class0 = X[y == 0]
+        class1 = X[y == 1]
+
+        ax = axs[i]
+        ax.scatter(class0[:, 0], class0[:, 1], c='blue', label='Classe 0', alpha=0.7, s=40)
+        ax.scatter(class1[:, 0], class1[:, 1], c='red', label='Classe 1', alpha=0.7, s=40)
         
-        for line in lines_list:
-            elems_list = [ e.split(':') for e in line.split() ] 
-            
-            if len(elems_list[0]) == 1:
-                labels_list.append( float(elems_list[0][0]) )
-                first_feature_index = 1
-            else:
-                labels_list.append(0.0)
-                first_feature_index = 0
-            
-            features_list = [ tuple([ int(e[0]), float(e[1]) ])  for e in elems_list[first_feature_index:] ]
-            examples_list.append( features_list )
-            nb_features = max(nb_features, max( features_list )[0] )
-            
-        self.X = np.zeros( (len(labels_list), nb_features) )
-        for i in range( len(labels_list) ):
-            for (j, val) in examples_list[i]:
-                self.X[i,j-1] = val
-                
-        self.Y = np.array(labels_list)
-                 
-    def get_nb_examples(self):
-        """ Return the number of examples of the dataset. """
-        if self.X is None: return 0
-        return np.size(self.X, 0)       
+        ax.set_title(title, fontsize=14, fontweight='bold')
+        ax.set_xlabel("Feature 1")
+        ax.set_ylabel("Feature 2")
+        ax.grid(True, alpha=0.3)
+        ax.legend()
+
+    plt.tight_layout()
+    plt.suptitle("Two Moons Dataset - Rotation Analysis", fontsize=16, y=1.02)
+
+    # Sauvegarde des figures
+    plt.savefig("two_moons_rotations.png", dpi=300, bbox_inches='tight')
+    plt.savefig("two_moons_rotations.pdf", bbox_inches='tight')
     
-    def get_nb_features(self):
-        """ Return the number of features of each example. """
-        if self.X is None: return 0
-        return np.size(self.X, 1)
+    print("Figures sauvegardées dans le répertoire courant :")
+    print("   - two_moons_rotations.png")
+    print("   - two_moons_rotations.pdf")
+    
+    plt.show()
 
-    def select_examples(self, indices):
-        """ Select the examples of specified indices (and discard others).  """
-        self.X = self.X[indices]
-        self.Y = self.Y[indices]
-        
-    def reshape_features(self, new_nb_features):
-        """ Add or remove elements to feature vectors. """
-        diff_features = new_nb_features - self.get_nb_features()
-        if diff_features < 0:
-            self.X = self.X[:, :diff_features]        
-        elif diff_features > 0:
-            nb_examples = self.get_nb_examples()
-            self.X = np.hstack(( self.X, np.zeros([nb_examples, diff_features]) ))
+
+# ======================= Exécution =======================
+if __name__ == "__main__":
+    plot_two_moons()
