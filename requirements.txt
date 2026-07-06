@@ -1,0 +1,30 @@
+contourpy==1.3.3
+cycler==0.12.1
+-e git+https://github.com/Samuel-Vangu/domain-adaptation-with-optimal-transport@b432800b4439058e632bd1da05786895078a6f3a#egg=domain_adaptation_ot
+fonttools==4.63.0
+ImageIO==2.37.3
+joblib==1.5.3
+kiwisolver==1.5.0
+lazy-loader==0.5
+matplotlib==3.11.0
+narwhals==2.23.0
+networkx==3.6.1
+numpy==2.5.0
+packaging==26.2
+pandas==3.0.3
+# Editable install with no version control (pbda==0.1.0)
+-e /workspaces/domain-adaptation-with-optimal-transport/external/pbda
+pillow==12.3.0
+POT==0.9.6.post1
+pyparsing==3.3.2
+python-dateutil==2.9.0.post0
+scikit-image==0.26.0
+scikit-learn==1.9.0
+scipy==1.18.0
+seaborn==0.13.2
+setuptools==82.0.1
+six==1.17.0
+skada==0.6.0
+threadpoolctl==3.6.0
+tifffile==2026.6.1
+wheel==0.47.0

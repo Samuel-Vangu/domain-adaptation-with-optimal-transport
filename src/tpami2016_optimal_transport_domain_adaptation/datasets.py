@@ -1,6 +1,11 @@
 from sklearn.datasets import make_moons
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.datasets import fetch_openml
+from skimage.transform import resize
+from sklearn.datasets import load_files  
+import scipy.io as sio
+
 
 
 class TwoMoonsDataset:
@@ -92,52 +97,237 @@ class TwoMoonsDataset:
         return X, y
 
 
-# ========================== Code de visualisation ==========================
-def plot_two_moons():
-    dataset = TwoMoonsDataset(noise=0.1, seed=42)
-    angles = [0, 20, 40, 90]
-    n_samples = 300  # 150 par classe
 
-    # Création d'une figure avec 4 sous-graphiques
-    fig, axs = plt.subplots(2, 2, figsize=(12, 10))
-    axs = axs.ravel()
+class MnistDataset:
+    """
+    Random subset of the MNIST dataset.
 
-    for i, angle in enumerate(angles):
-        if angle == 0:
-            X, y = dataset.source(n_samples)
-            title = "Source domain (0°)"
+    The images are resized from 28×28 to 16×16 in order to
+    match the USPS image resolution.
+    """
+
+    def __init__(self, n_samples: int = 2000, seed: int = 42):
+        """
+        Parameters
+        ----------
+        n_samples : int, default=2000
+            Number of randomly sampled images.
+        seed : int, default=42
+            Random seed used for sampling.
+        """
+        self.seed = seed
+        self.n_samples = n_samples
+
+    def generate(self) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Load, normalize, resize and randomly sample the MNIST dataset.
+
+        Returns
+        -------
+        X : ndarray of shape (n_samples, 256)
+            Flattened 16×16 normalized images.
+        y : ndarray of shape (n_samples,)
+            Digit labels.
+        """
+
+        # Load and normalize the dataset
+        mnist = fetch_openml("mnist_784", version=1, as_frame=False)
+        X = mnist.data / 255.0
+        y = mnist.target.astype(int)
+
+        # Randomly sample the dataset
+        rng = np.random.default_rng(seed=self.seed)
+        idx = rng.integers(0, X.shape[0], size=self.n_samples)
+
+        X = X[idx]
+        y = y[idx]
+
+        # Resize images from 28×28 to 16×16
+        X_img = X.reshape(-1, 28, 28)
+
+        X_resized = np.array(
+            [resize(img, (16, 16), anti_aliasing=True) for img in X_img]
+        )
+
+        X_16 = X_resized.reshape(-1, 16 * 16)
+
+        return X_16, y
+
+
+class UspsDataset:
+    """
+    Random subset of the USPS dataset.
+
+    USPS images are already represented as 16×16 grayscale images.
+    """
+
+    def __init__(self, n_samples: int = 1800, seed: int = 42):
+        """
+        Parameters
+        ----------
+        n_samples : int, default=1800
+            Number of randomly sampled images.
+        seed : int, default=42
+            Random seed used for sampling.
+        """
+        self.seed = seed
+        self.n_samples = n_samples
+
+    def generate(self) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Load, normalize and randomly sample the USPS dataset.
+
+        Returns
+        -------
+        X : ndarray of shape (n_samples, 256)
+            Flattened normalized 16×16 images.
+        y : ndarray of shape (n_samples,)
+            Digit labels.
+        """
+
+        # Load and normalize the dataset
+        usps = fetch_openml("usps", version=2, as_frame=False)
+        X = (usps.data + 1) / 2
+        y = usps.target.astype(int) - 1
+
+        # Randomly sample the dataset
+        rng = np.random.default_rng(seed=self.seed)
+        idx = rng.integers(0, X.shape[0], size=self.n_samples)
+
+        X = X[idx]
+        y = y[idx]
+
+        return X, y
+
+
+
+
+def PieDataset(pose: str):
+    """
+    Load one of the four PIE domains used in the paper.
+
+    Parameters
+    ----------
+    pose : str
+        One of {"LeftPose", "UpwardPose", "DownwardPose", "RightPose"}.
+
+    Returns
+    -------
+    X : ndarray of shape (n_samples, 1024)
+    y : ndarray of shape (n_samples,)
+    """
+
+    # Load the domain corresponding to the selected camera pose.
+    if pose == "LeftPose":
+        data = sio.loadmat(
+            "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/PIE/PIE05.mat")
+
+    elif pose == "UpwardPose":
+        data = sio.loadmat(
+            "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/PIE/PIE07.mat"
+        )
+
+    elif pose == "DownwardPose":
+        data = sio.loadmat(
+            "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/PIE/PIE09.mat"
+        )
+
+    elif pose == "RightPose":
+        data = sio.loadmat(
+            "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/PIE/PIE29.mat"
+
+        )
+
+    else:
+        raise ValueError(
+            "Unknown pose. Expected one of "
+            "{'LeftPose', 'UpwardPose', 'DownwardPose', 'RightPose'}."
+        )
+    X = data['fea']
+    y = data['gnd'].ravel()
+    return X,y
+
+import scipy.io as sio
+import numpy as np
+
+
+def CaltechOfficeDataset(representation: str, domain: str) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Load one domain of the Office+Caltech dataset.
+
+    Parameters
+    ----------
+    representation : str
+        Feature representation to use.
+        One of {"SURF", "DeCAF"}.
+    domain : str
+        Domain to load.
+        One of {"caltech", "amazon", "webcam", "dslr"}.
+
+    Returns
+    -------
+    X : ndarray
+        Feature matrix.
+    y : ndarray
+        Class labels.
+    """
+
+    if representation == "SURF":
+
+        # Load SURF features
+        if domain == "caltech":
+            data = sio.loadmat(
+                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--surf/caltech_surf_10.mat"
+            )
+
+        elif domain == "amazon":
+            data = sio.loadmat(
+                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--surf/amazon_surf_10.mat"
+            )
+
+        elif domain == "webcam":
+            data = sio.loadmat(
+                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--surf/webcam_surf_10.mat"
+            )
+
         else:
-            X, y = dataset.target(n_samples, angle)
-            title = f"Target domain ({angle}°)"
+            data = sio.loadmat(
+                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--surf/dslr_surf_10.mat"
+            )
 
-        # Séparation des deux classes
-        class0 = X[y == 0]
-        class1 = X[y == 1]
+        X = data["feas"]
+        y = data["label"].ravel()
 
-        ax = axs[i]
-        ax.scatter(class0[:, 0], class0[:, 1], c='blue', label='Classe 0', alpha=0.7, s=40)
-        ax.scatter(class1[:, 0], class1[:, 1], c='red', label='Classe 1', alpha=0.7, s=40)
+    else:
+
+        # Load DeCAF features
+        if domain == "caltech":
+            data = sio.loadmat(
+                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--decaf/caltech_decaf.mat"
+            )
+
+        elif domain == "amazon":
+            data = sio.loadmat(
+                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--decaf/amazon_decaf.mat"
+            )
+
+        elif domain == "webcam":
+            data = sio.loadmat(
+                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--decaf/webcam_decaf.mat"
+            )
+
+        else:
+            data = sio.loadmat(
+                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--decaf/dslr_decaf.mat"
+            )
+
+        X = data["feas"]
+        y = data["labels"].ravel()
+
+    return X, y
         
-        ax.set_title(title, fontsize=14, fontweight='bold')
-        ax.set_xlabel("Feature 1")
-        ax.set_ylabel("Feature 2")
-        ax.grid(True, alpha=0.3)
-        ax.legend()
-
-    plt.tight_layout()
-    plt.suptitle("Two Moons Dataset - Rotation Analysis", fontsize=16, y=1.02)
-
-    # Sauvegarde des figures
-    plt.savefig("two_moons_rotations.png", dpi=300, bbox_inches='tight')
-    plt.savefig("two_moons_rotations.pdf", bbox_inches='tight')
-    
-    print("Figures sauvegardées dans le répertoire courant :")
-    print("   - two_moons_rotations.png")
-    print("   - two_moons_rotations.pdf")
-    
-    plt.show()
 
 
-# ======================= Exécution =======================
-if __name__ == "__main__":
-    plot_two_moons()
+
+
+
