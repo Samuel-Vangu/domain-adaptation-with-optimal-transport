@@ -220,21 +220,21 @@ def PieDataset(pose: str):
     # Load the domain corresponding to the selected camera pose.
     if pose == "LeftPose":
         data = sio.loadmat(
-            "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/PIE/PIE05.mat")
+            "src/tpami2016_optimal_transport_domain_adaptation/experiment_02/PIE/PIE05.mat")
 
     elif pose == "UpwardPose":
         data = sio.loadmat(
-            "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/PIE/PIE07.mat"
+            "src/tpami2016_optimal_transport_domain_adaptation/experiment_02/PIE/PIE07.mat"
         )
 
     elif pose == "DownwardPose":
         data = sio.loadmat(
-            "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/PIE/PIE09.mat"
+            "src/tpami2016_optimal_transport_domain_adaptation/experiment_02/PIE/PIE09.mat"
         )
 
     elif pose == "RightPose":
         data = sio.loadmat(
-            "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/PIE/PIE29.mat"
+            "src/tpami2016_optimal_transport_domain_adaptation/experiment_02/PIE/PIE29.mat"
 
         )
 
@@ -277,22 +277,22 @@ def CaltechOfficeDataset(representation: str, domain: str) -> tuple[np.ndarray, 
         # Load SURF features
         if domain == "caltech":
             data = sio.loadmat(
-                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--surf/caltech_surf_10.mat"
+                "src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--surf/caltech_surf_10.mat"
             )
 
         elif domain == "amazon":
             data = sio.loadmat(
-                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--surf/amazon_surf_10.mat"
+                "src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--surf/amazon_surf_10.mat"
             )
 
         elif domain == "webcam":
             data = sio.loadmat(
-                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--surf/webcam_surf_10.mat"
+                "src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--surf/webcam_surf_10.mat"
             )
 
         else:
             data = sio.loadmat(
-                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--surf/dslr_surf_10.mat"
+                "src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--surf/dslr_surf_10.mat"
             )
 
         X = data["feas"]
@@ -303,22 +303,24 @@ def CaltechOfficeDataset(representation: str, domain: str) -> tuple[np.ndarray, 
         # Load DeCAF features
         if domain == "caltech":
             data = sio.loadmat(
-                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--decaf/caltech_decaf.mat"
+                "src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--decaf/caltech_decaf.mat"
             )
 
         elif domain == "amazon":
             data = sio.loadmat(
-                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--decaf/amazon_decaf.mat"
+                "src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--decaf/amazon_decaf.mat"
             )
+
+            
 
         elif domain == "webcam":
             data = sio.loadmat(
-                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--decaf/webcam_decaf.mat"
+                "src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--decaf/webcam_decaf.mat"
             )
 
         else:
             data = sio.loadmat(
-                "/workspaces/domain-adaptation-with-optimal-transport/src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--decaf/dslr_decaf.mat"
+                "src/tpami2016_optimal_transport_domain_adaptation/experiment_02/office+caltech--decaf/dslr_decaf.mat"
             )
 
         X = data["feas"]

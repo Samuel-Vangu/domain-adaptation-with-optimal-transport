@@ -12,8 +12,6 @@ networkx==3.6.1
 numpy==2.5.0
 packaging==26.2
 pandas==3.0.3
-# Editable install with no version control (pbda==0.1.0)
--e /workspaces/domain-adaptation-with-optimal-transport/external/pbda
 pillow==12.3.0
 POT==0.9.6.post1
 pyparsing==3.3.2
